@@ -1,13 +1,17 @@
-#define THRESHOLD 80
+#define THRESHOLD1 80  //volume threshold of the 1st clap
+#define THRESHOLD2 60  //volume threshold of the 2nd clap
+
 #define STATE_STANDBY 0
 #define STATE_FIRST_CLAP 1
-#define TIME_FIRST_CLAP 100
 #define STATE_CLAP_DELAY 2
-#define TIME_CLAP_DELAY 60
 #define STATE_SECOND_CLAP 3
-#define TIME_SECOND_CLAP 500
 #define STATE_SWITCH_DELAY 4
-#define TIME_SWITCH_DELAY 1000
+
+//duration of each state (ms)
+#define TIME_FIRST_CLAP 50    //length of the first clap
+#define TIME_CLAP_DELAY 80     //gap between claps
+#define TIME_SECOND_CLAP 500   //second clap
+#define TIME_SWITCH_DELAY 1000 //minimum delay between light switching
 
 //DC pins
 #define PUSHBUTTON 2
@@ -67,7 +71,7 @@ void loop() {
   switch (state) {
     case STATE_STANDBY:
       count = 0;
-      if (sensorValue > THRESHOLD) {
+      if (sensorValue > THRESHOLD1) {
         state = STATE_FIRST_CLAP;
         Serial.println("STATE FIRST CLAP");
         clapCount = 1;
@@ -75,7 +79,7 @@ void loop() {
       break;
       
     case STATE_FIRST_CLAP:
-      if (sensorValue > THRESHOLD) clapCount++;
+      if (sensorValue > THRESHOLD1) clapCount++;
       if (count > TIME_FIRST_CLAP) {
         if (validClap(clapCount)) {
           count = 0;
@@ -92,7 +96,7 @@ void loop() {
       
     case STATE_CLAP_DELAY:
       count++;
-      if (sensorValue > THRESHOLD) {
+      if (sensorValue > THRESHOLD2) {
         state = STATE_STANDBY;
         Serial.println("STATE STANDBY");
       }
@@ -104,7 +108,7 @@ void loop() {
       break;
     
     case STATE_SECOND_CLAP:
-      if (sensorValue > THRESHOLD) clapCount++;
+      if (sensorValue > THRESHOLD2) clapCount++;
       
       if (validClap(clapCount)) {
         count = 0;
@@ -131,8 +135,4 @@ void loop() {
   }
   
   delay(1);        // delay in between reads for stability
-  
-  /*if (sensorValue > THRESHOLD) 
-    Serial.println(sensorValue);
-  */
 }
