@@ -1,5 +1,5 @@
-#define THRESHOLD1 80  //volume threshold of the 1st clap
-#define THRESHOLD2 60  //volume threshold of the 2nd clap
+#define THRESHOLD1 100  //volume threshold of the 1st clap
+#define THRESHOLD2 80  //volume threshold of the 2nd clap
 
 #define STATE_STANDBY 0
 #define STATE_FIRST_CLAP 1
