@@ -1,16 +1,18 @@
 #define THRESHOLD1 100  //volume threshold of the 1st clap
-#define THRESHOLD2 80  //volume threshold of the 2nd clap
+#define THRESHOLD2 100  //volume threshold of the 2nd clap
 
 #define STATE_STANDBY 0
 #define STATE_FIRST_CLAP 1
 #define STATE_CLAP_DELAY 2
 #define STATE_SECOND_CLAP 3
-#define STATE_SWITCH_DELAY 4
+#define STATE_SECOND_DELAY 4
+#define STATE_SWITCH_DELAY 5
 
 //duration of each state (ms)
 #define TIME_FIRST_CLAP 50    //length of the first clap
 #define TIME_CLAP_DELAY 80     //gap between claps
 #define TIME_SECOND_CLAP 500   //second clap
+#define TIME_SECOND_DELAY 50 //required length of silence after second clap
 #define TIME_SWITCH_DELAY 1000 //minimum delay between light switching
 
 //DC pins
@@ -19,6 +21,7 @@
 
 int count;
 int clapCount;
+int quietCount;
 int state;
 
 boolean buttonPushed;
@@ -68,6 +71,8 @@ void loop() {
   int sensorValue = analogRead(A0);
   count++;
   
+  //if (sensorValue > 20) Serial.println(sensorValue);
+  
   switch (state) {
     case STATE_STANDBY:
       count = 0;
@@ -110,15 +115,34 @@ void loop() {
     case STATE_SECOND_CLAP:
       if (sensorValue > THRESHOLD2) clapCount++;
       
-      if (validClap(clapCount)) {
+      else if (validClap(clapCount)) {
         count = 0;
-        lightswitch();
-        state = STATE_SWITCH_DELAY;
-        Serial.println("STATE SWITCH DELAY");
+        clapCount = 0;
+        state = STATE_SECOND_DELAY;
+        Serial.println("STATE SECOND DELAY");
       }
-      else if (count > TIME_SECOND_CLAP) {
+      
+      if (count > TIME_SECOND_CLAP) {
           state = STATE_STANDBY;
           Serial.println("STATE STANDBY");
+      }
+      break;
+     
+    case STATE_SECOND_DELAY:
+      if (count > TIME_SECOND_DELAY) {
+        count = 0;
+        state = STATE_SWITCH_DELAY;
+        lightswitch();
+        Serial.println("STATE SWITCH DELAY");
+      } 
+      
+      if (sensorValue > THRESHOLD2) {
+        clapCount++;
+      }
+      
+      if (clapCount > 4){
+        state = STATE_STANDBY;
+        Serial.println("STATE STANDBY");
       }
       break;
       
