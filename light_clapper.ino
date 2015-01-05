@@ -4,15 +4,15 @@
 #define STATE_STANDBY 0
 #define STATE_FIRST_CLAP 1
 #define STATE_CLAP_DELAY 2
-#define STATE_SECOND_CLAP 3
-#define STATE_SECOND_DELAY 4
+#define STATE_SECOND_CLAP_LISTEN 3
+#define STATE_SECOND_CLAP 4
 #define STATE_SWITCH_DELAY 5
 
 //duration of each state (ms)
 #define TIME_FIRST_CLAP 50    //length of the first clap
 #define TIME_CLAP_DELAY 80     //gap between claps
-#define TIME_SECOND_CLAP 500   //second clap
-#define TIME_SECOND_DELAY 100 //required length of silence after second clap
+#define TIME_SECOND_CLAP_LISTEN 500 //duration of listening for a second clap
+#define TIME_SECOND_CLAP 50 //length of second clap
 #define TIME_SWITCH_DELAY 1000 //minimum delay between light switching
 
 //DC pins
@@ -28,7 +28,7 @@ boolean buttonPushed;
 boolean lightOn;
 
 boolean validClap(int claps) {
-    return (4 < claps && claps < 20);
+    return (3 < claps && claps < 20);
 }
 
 //TODO code to switch light on
@@ -71,7 +71,7 @@ void loop() {
   int sensorValue = analogRead(A0);
   count++;
   
-  //if (sensorValue > 20) Serial.println(sensorValue);
+  if (sensorValue > 20) Serial.println(sensorValue);
   
   switch (state) {
     case STATE_STANDBY:
@@ -107,42 +107,40 @@ void loop() {
       }
       if (count > TIME_CLAP_DELAY) {
         count = 0;
-        state = STATE_SECOND_CLAP;
-        Serial.println("STATE SECOND CLAP");
+        state = STATE_SECOND_CLAP_LISTEN;
+        Serial.println("STATE SECOND CLAP LISTEN");
       }
       break;
     
-    case STATE_SECOND_CLAP:
-      if (sensorValue > THRESHOLD2) clapCount++;
-      
-      else if (validClap(clapCount)) {
+    case STATE_SECOND_CLAP_LISTEN:
+      if (sensorValue > THRESHOLD2) {
         count = 0;
-        clapCount = 0;
-        state = STATE_SECOND_DELAY;
-        Serial.println("STATE SECOND DELAY");
+        state = STATE_SECOND_CLAP;
+        Serial.println("STATE SECOND CLAP");
       }
       
-      if (count > TIME_SECOND_CLAP) {
+      if (count > TIME_SECOND_CLAP_LISTEN) {
           state = STATE_STANDBY;
           Serial.println("STATE STANDBY");
       }
       break;
      
-    case STATE_SECOND_DELAY:
-      if (count > TIME_SECOND_DELAY) {
-        count = 0;
-        state = STATE_SWITCH_DELAY;
-        lightswitch();
-        Serial.println("STATE SWITCH DELAY");
+    case STATE_SECOND_CLAP:
+      if (count > TIME_SECOND_CLAP) {
+        if (validClap(clapCount)) {
+          count = 0;
+          clapCount = 0;
+          state = STATE_SWITCH_DELAY;
+          lightswitch();
+          Serial.println("STATE SWITCH DELAY");
+        }else{
+          state = STATE_STANDBY;
+          Serial.println("STATE STANDBY");
+        }
       } 
       
       if (sensorValue > THRESHOLD2) {
         clapCount++;
-      }
-      
-      if (clapCount > 10){
-        state = STATE_STANDBY;
-        Serial.println("STATE STANDBY");
       }
       break;
       
