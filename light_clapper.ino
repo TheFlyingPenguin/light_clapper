@@ -12,7 +12,7 @@
 #define TIME_FIRST_CLAP 50    //length of the first clap
 #define TIME_CLAP_DELAY 80     //gap between claps
 #define TIME_SECOND_CLAP 500   //second clap
-#define TIME_SECOND_DELAY 50 //required length of silence after second clap
+#define TIME_SECOND_DELAY 100 //required length of silence after second clap
 #define TIME_SWITCH_DELAY 1000 //minimum delay between light switching
 
 //DC pins
@@ -140,7 +140,7 @@ void loop() {
         clapCount++;
       }
       
-      if (clapCount > 4){
+      if (clapCount > 10){
         state = STATE_STANDBY;
         Serial.println("STATE STANDBY");
       }
