@@ -28,7 +28,7 @@ boolean buttonPushed;
 boolean lightOn;
 
 boolean validClap(int claps) {
-    return (1 < claps && claps < 20);
+    return (4 < claps && claps < 20);
 }
 
 //TODO code to switch light on
